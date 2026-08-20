@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <menuitem id="menu_una_inventory_root"
+                  name="UNA Inventory"
+                  sequence="10"
+                  groups="una_inventory_management.group_una_user"
+                  web_icon="una_inventory_management,static/description/icon.png"/>
+
+        <menuitem id="menu_una_operations"
+                  name="Operations"
+                  parent="menu_una_inventory_root"
+                  sequence="5"
+                  groups="una_inventory_management.group_una_user"/>
+
+        <menuitem id="menu_una_requisition"
+                  name="Requisitions"
+                  parent="menu_una_operations"
+                  action="action_una_requisition"
+                  sequence="5"
+                  groups="una_inventory_management.group_una_user,una_inventory_management.group_una_line_manager,una_inventory_management.group_una_audit,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_pending_receipts"
+                  name="Pending Receipt into Inventory"
+                  parent="menu_una_operations"
+                  action="action_pending_receipts"
+                  sequence="7"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_stock_move"
+                  name="Stock Moves"
+                  parent="menu_una_operations"
+                  action="action_una_stock_move"
+                  sequence="10"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_stock_count"
+                  name="Stock Counts"
+                  parent="menu_una_operations"
+                  action="action_una_stock_count"
+                  sequence="15"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_inventory"
+                  name="Inventory"
+                  parent="menu_una_inventory_root"
+                  action="action_una_inventory"
+                  sequence="10"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_assets_root"
+                  name="Assets"
+                  parent="menu_una_inventory_root"
+                  sequence="15"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_assets"
+                  name="All Assets"
+                  parent="menu_una_assets_root"
+                  action="action_una_asset"
+                  sequence="5"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_asset_damage_report"
+                  name="Damage Reports"
+                  parent="menu_una_assets_root"
+                  action="action_una_asset_damage_report"
+                  sequence="10"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_configuration"
+                  name="Configuration"
+                  parent="menu_una_inventory_root"
+                  sequence="20"
+                  groups="una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_warehouse"
+                  name="Warehouses"
+                  parent="menu_una_configuration"
+                  action="action_una_warehouse"
+                  sequence="3"
+                  groups="una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_product"
+                  name="Products"
+                  parent="menu_una_configuration"
+                  action="action_una_product"
+                  sequence="5"
+                  groups="una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_location"
+                  name="Locations"
+                  parent="menu_una_configuration"
+                  action="action_una_location"
+                  sequence="10"
+                  groups="una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_reports"
+                  name="Reports"
+                  parent="menu_una_inventory_root"
+                  sequence="25"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+
+        <menuitem id="menu_una_report_dashboard"
+                  name="Dashboard"
+                  parent="menu_una_reports"
+                  action="action_una_report_dashboard"
+                  sequence="0"
+                  groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager,una_inventory_management.group_una_director_admin"/>
+    </data>
+</odoo>

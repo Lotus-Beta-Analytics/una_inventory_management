@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_una_inventory" model="ir.actions.act_window">
+        <field name="name">Inventory</field>
+        <field name="res_model">una.inventory</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Track inventory stock levels
+            </p>
+        </field>
+    </record>
+
+    <record id="view_una_inventory_tree" model="ir.ui.view">
+        <field name="name">una.inventory.tree</field>
+        <field name="model">una.inventory</field>
+        <field name="arch" type="xml">
+            <tree string="Inventory" create="false" delete="false" import="1">
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <field name="quantity_on_hand" sum="Total On Hand"/>
+                <field name="reserved_quantity" sum="Total Reserved"/>
+                <field name="available_quantity" sum="Total Available"/>
+                <field name="quantity_in_bundles"
+                       string="Bundles"
+                       invisible="not product_id.is_bundle"/>
+                <field name="bundle_display"
+                       string="Stock Summary"
+                       invisible="not product_id.is_bundle"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="total_value" sum="Total Value" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_una_inventory_form" model="ir.ui.view">
+        <field name="name">una.inventory.form</field>
+        <field name="model">una.inventory</field>
+        <field name="arch" type="xml">
+            <form string="Inventory" create="false" delete="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <!-- For assets: always read-only. For consumables: only admins can edit -->
+                            <field name="product_id"
+                                   readonly="product_id.product_type == 'asset'"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="location_id"
+                                   readonly="product_id.product_type == 'asset'"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                        </group>
+                        <group>
+                            <field name="quantity_on_hand"
+                                   readonly="product_id.product_type == 'asset'"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="reserved_quantity"
+                                   readonly="product_id.product_type == 'asset'"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="available_quantity" readonly="1"/>
+                            <field name="total_value" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

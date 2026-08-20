@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- ===== GROUPS ===== -->
+        <record id="group_una_user" model="res.groups">
+            <field name="name">UNA User</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+        </record>
+
+        <record id="group_una_line_manager" model="res.groups">
+            <field name="name">UNA Line Manager</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="implied_ids" eval="[(4, ref('group_una_user'))]"/>
+        </record>
+
+        <record id="group_una_admin_assistant" model="res.groups">
+            <field name="name">UNA Admin Assistant</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="implied_ids" eval="[(4, ref('group_una_line_manager'))]"/>
+        </record>
+
+        <record id="group_una_admin_manager" model="res.groups">
+            <field name="name">UNA Admin Manager</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="implied_ids" eval="[(4, ref('group_una_admin_assistant'))]"/>
+        </record>
+
+        <record id="group_una_director_admin" model="res.groups">
+            <field name="name">UNA Director of Admin</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="implied_ids" eval="[(4, ref('group_una_admin_manager'))]"/>
+        </record>
+
+        <record id="group_una_audit" model="res.groups">
+            <field name="name">UNA Audit</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="implied_ids" eval="[(4, ref('group_una_user'))]"/>
+        </record>
+    </data>
+</odoo>

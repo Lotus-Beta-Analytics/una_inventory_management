@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Product Sequence -->
+        <record id="seq_una_product" model="ir.sequence">
+            <field name="name">UNA Product</field>
+            <field name="code">una.product</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Location Sequence -->
+        <record id="seq_una_location" model="ir.sequence">
+            <field name="name">UNA Location</field>
+            <field name="code">una.location</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_una_requisition" model="ir.sequence">
+            <field name="name">UNA Requisition</field>
+            <field name="code">una.requisition</field>
+            <field name="prefix">REQ-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_una_stock_count" model="ir.sequence">
+            <field name="name">UNA Stock Count</field>
+            <field name="code">una.stock.count</field>
+            <field name="prefix">SC-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_una_stock_move_receipt" model="ir.sequence">
+            <field name="name">UNA Stock Move Receipt</field>
+            <field name="code">una.stock.move.receipt</field>
+            <field name="prefix">RCT-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_una_stock_move_issue" model="ir.sequence">
+            <field name="name">UNA Stock Move Issue</field>
+            <field name="code">una.stock.move.issue</field>
+            <field name="prefix">ISS-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_una_stock_move_transfer" model="ir.sequence">
+            <field name="name">UNA Stock Move Transfer</field>
+            <field name="code">una.stock.move.transfer</field>
+            <field name="prefix">TRF-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_una_stock_move_scrap" model="ir.sequence">
+            <field name="name">UNA Stock Move Scrap</field>
+            <field name="code">una.stock.move.scrap</field>
+            <field name="prefix">SCR-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_una_stock_move_adjustment" model="ir.sequence">
+            <field name="name">UNA Stock Move Adjustment</field>
+            <field name="code">una.stock.move.adjustment</field>
+            <field name="prefix">ADJ-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

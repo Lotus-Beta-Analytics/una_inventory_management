@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_una_stock_move" model="ir.actions.act_window">
+        <field name="name">Stock Moves</field>
+        <field name="res_model">una.stock.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create stock movements: Receipt, Issue, Transfer, Scrap
+            </p>
+        </field>
+    </record>
+
+    <record id="view_una_stock_move_tree" model="ir.ui.view">
+        <field name="name">una.stock.move.tree</field>
+        <field name="model">una.stock.move</field>
+        <field name="arch" type="xml">
+            <tree string="Stock Moves">
+                <field name="reference"/>
+                <field name="move_type" widget="badge"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="source_location"/>
+                <field name="destination_location"/>
+                <field name="state" widget="badge"/>
+                <field name="move_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Stock Move Form View - COMPLETELY FIXED -->
+    <record id="view_una_stock_move_form" model="ir.ui.view">
+        <field name="name">una.stock.move.form</field>
+        <field name="model">una.stock.move</field>
+        <field name="arch" type="xml">
+            <form string="Stock Move">
+                <header>
+                    <!-- ★ FIXED: Replaced states with invisible -->
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="reference" placeholder="Reference..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="move_type"/>
+                            <field name="quantity"/>
+                            <field name="cost_price_at_move" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="source_location"/>
+                            <field name="destination_location"/>
+                            <field name="move_date"/>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                    <!-- Serial Fields - FIXED -->
+                    <group string="Serial Numbers" invisible="not product_id.is_serial_tracked">
+                        <group>
+                            <field name="serial_entry_method"/>
+                            <field name="first_serial_number" invisible="serial_entry_method != 'range'"/>
+                            <field name="generated_serials" invisible="serial_entry_method != 'range'" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="serial_numbers"
+                                   invisible="serial_entry_method != 'single'"
+                                   placeholder="Enter serial numbers, one per line"
+                                   widget="text"/>
+                        </group>
+                    </group>
+                    <!-- Asset Selection -->
+                    <group string="Assets" invisible="product_id.product_type != 'asset'">
+                        <field name="selected_asset_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>

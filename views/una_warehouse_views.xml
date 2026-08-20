@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_una_warehouse" model="ir.actions.act_window">
+        <field name="name">Warehouses</field>
+        <field name="res_model">una.warehouse</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create warehouses for inventory storage
+                <br/>
+                <span class="text-muted">Hierarchy: Warehouse → Station → Location</span>
+            </p>
+        </field>
+    </record>
+
+    <record id="view_una_warehouse_tree" model="ir.ui.view">
+        <field name="name">una.warehouse.tree</field>
+        <field name="model">una.warehouse</field>
+        <field name="arch" type="xml">
+            <tree string="Warehouses">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="manager_id"/>
+                <field name="active" widget="boolean"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_una_warehouse_form" model="ir.ui.view">
+        <field name="name">una.warehouse.form</field>
+        <field name="model">una.warehouse</field>
+        <field name="arch" type="xml">
+            <form string="Warehouse">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" string="Warehouse Name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Main Distribution Center..."/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Basic Information">
+                            <field name="code"/>
+                            <field name="manager_id"/>
+                        </group>
+                        <group string="Status">
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Storage Locations" name="locations">
+                            <field name="location_ids" mode="tree">
+                                <tree string="Locations" editable="bottom" limit="10">
+                                    <field name="display_name"/>
+                                    <field name="station_id"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

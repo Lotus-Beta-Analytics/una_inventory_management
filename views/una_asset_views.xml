@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_una_asset" model="ir.actions.act_window">
+        <field name="name">Assets</field>
+        <field name="res_model">una.asset</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_una_asset_tree" model="ir.ui.view">
+        <field name="name">una.asset.tree</field>
+        <field name="model">una.asset</field>
+        <field name="arch" type="xml">
+            <tree string="Assets" create="false" delete="false" import="1">
+                <field name="name"/>
+                <field name="asset_tag"/>
+                <field name="serial_number"/>
+                <field name="product_id"/>
+                <field name="source_location" readonly="1"/>
+                <field name="current_location"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="cost_price" sum="Total Assets Value" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="last_move_date" readonly="1"/>
+                <field name="status" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_una_asset_form" model="ir.ui.view">
+        <field name="name">una.asset.form</field>
+        <field name="model">una.asset</field>
+        <field name="arch" type="xml">
+            <form string="Asset" create="false" delete="false">
+                <header>
+                    <button name="action_assign_simple" string="Assign" type="object" class="btn-primary" invisible="status != 'available'"/>
+                    <button name="action_make_available" string="Make Available" type="object" class="btn-secondary" invisible="status != 'assigned'"/>
+                    <button name="action_scrap" string="Scrap" type="object" class="btn-danger" invisible="status == 'scrapped'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Asset Name..."
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="serial_number"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="asset_tag"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+
+                            <!-- Admin Override Dropdown -->
+                            <field name="change_asset"
+                                   widget="many2one"
+                                   domain="[('product_id', '=', product_id), ('status', '=', 'available')]"
+                                   options="{'no_create': True}"
+                                   help="Select another available asset to change serial and tag"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="status" widget="badge" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="cost_price" widget="monetary" options="{'currency_field': 'currency_id'}"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="current_location"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="source_location" readonly="1"/>
+                            <field name="last_move_date" readonly="1"/>
+                            <field name="purchase_date"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="assigned_to"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                            <field name="assigned_date"
+                                   groups="una_inventory_management.group_una_admin_assistant,una_inventory_management.group_una_admin_manager"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="cron_24hr_requisition_escalation" model="ir.cron">
+            <field name="name">24-Hour Requisition Escalation</field>
+            <field name="model_id" ref="model_una_requisition"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_check_pending_approvals()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <record id="cron_weekly_stock_count" model="ir.cron">
+            <field name="name">Weekly Stock Count Creation</field>
+            <field name="model_id" ref="model_una_stock_count"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_create_weekly_stock_counts()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">weeks</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- PDF Report Definition -->
+        <report id="action_report_una_dashboard"
+                model="una.report.dashboard"
+                string="Inventory Dashboard"
+                report_type="qweb-pdf"
+                name="una_inventory_management.report_dashboard_template"
+                file="una_inventory_management.report_dashboard_template"
+                attachment_use="False"/>
+
+        <!-- PDF Report Template -->
+        <template id="report_dashboard_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="color: #1a237e; font-size: 24px;">📊 UNA Inventory Dashboard</h1>
+                                <p style="color: #6c757d;">Generated: <span t-esc="doc.write_date or datetime.now().strftime('%Y-%m-%d %H:%M')"/></p>
+                            </div>
+
+                            <!-- KPI Cards -->
+                            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
+                                <div style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 8px;">
+                                    <div style="font-size: 12px; opacity: 0.8;">Total Value</div>
+                                    <div style="font-size: 20px; font-weight: bold;">$<t t-esc="'{:,.2f}'.format(doc.total_inventory_value or 0)"/></div>
+                                </div>
+                                <div style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 15px; border-radius: 8px;">
+                                    <div style="font-size: 12px; opacity: 0.8;">Total Assets</div>
+                                    <div style="font-size: 20px; font-weight: bold;"><t t-esc="doc.total_assets or 0"/></div>
+                                </div>
+                                <div style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 15px; border-radius: 8px;">
+                                    <div style="font-size: 12px; opacity: 0.8;">Pending Requisitions</div>
+                                    <div style="font-size: 20px; font-weight: bold;"><t t-esc="doc.pending_requisitions or 0"/></div>
+                                </div>
+                                <div style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #fa709a, #fee140); color: #1a1a2e; padding: 15px; border-radius: 8px;">
+                                    <div style="font-size: 12px; opacity: 0.8;">Discrepancies</div>
+                                    <div style="font-size: 20px; font-weight: bold;"><t t-esc="doc.stock_count_discrepancies or 0"/></div>
+                                </div>
+                            </div>
+
+                            <!-- Inventory by Location -->
+                            <div style="margin-bottom: 20px;">
+                                <h3 style="color: #1a237e; border-bottom: 2px solid #e8eaf6; padding-bottom: 8px;">🏢 Inventory by Location</h3>
+                                <div style="white-space: pre-wrap; font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                                    <t t-esc="doc.inventory_by_location or 'No data'"/>
+                                </div>
+                            </div>
+
+                            <!-- Recent Movements -->
+                            <div style="margin-bottom: 20px;">
+                                <h3 style="color: #1a237e; border-bottom: 2px solid #e8eaf6; padding-bottom: 8px;">🔄 Recent Movements</h3>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 11px; max-height: 300px; overflow-y: auto;">
+                                    <t t-raw="doc.recent_movements or 'No recent movements'"/>
+                                </div>
+                            </div>
+
+                            <!-- Low Stock Alerts -->
+                            <div style="margin-bottom: 20px;">
+                                <h3 style="color: #1a237e; border-bottom: 2px solid #e8eaf6; padding-bottom: 8px;">⚠️ Low Stock Alerts</h3>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 11px;">
+                                    <t t-raw="doc.low_stock_alerts or 'All stock levels are healthy'"/>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 11px; color: #adb5bd;">
+                                UNA Inventory Management System v17.0
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

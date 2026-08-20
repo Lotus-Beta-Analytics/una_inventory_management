@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_una_requisition" model="ir.actions.act_window">
+        <field name="name">Requisitions</field>
+        <field name="res_model">una.requisition</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create requisitions for inventory items
+            </p>
+        </field>
+    </record>
+
+    <!-- ✅ FIXED: Tree View - Only one status column -->
+    <record id="view_una_requisition_tree" model="ir.ui.view">
+        <field name="name">una.requisition.tree</field>
+        <field name="model">una.requisition</field>
+        <field name="arch" type="xml">
+            <tree string="Requisitions">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="station_id"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="estimated_cost" sum="Total Estimated Cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <!-- ✅ Only ONE status column - status_display with green when approved -->
+                <field name="status_display" string="Status" widget="badge" decoration-success="state == 'audit_approved'"/>
+                <field name="state" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_una_requisition_form" model="ir.ui.view">
+        <field name="name">una.requisition.form</field>
+        <field name="model">una.requisition</field>
+        <field name="arch" type="xml">
+            <form string="Requisition">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_line_manager_approve" string="Approve (Line Mgr)" type="object" class="btn-primary" invisible="state != 'submitted'"/>
+                    <button name="action_admin_assistant_approve" string="Approve (Admin Asst)" type="object" class="btn-primary" invisible="state != 'line_manager_approved'"/>
+                    <button name="action_admin_manager_approve" string="Approve (Admin Mgr)" type="object" class="btn-primary" invisible="state != 'admin_assistant_approved'"/>
+                    <button name="action_director_approve" string="Approve (Director)" type="object" class="btn-primary" invisible="state != 'admin_manager_approved'"/>
+                    <button name="action_audit_approve" string="Approve (Audit)" type="object" class="btn-primary" invisible="state != 'director_approved'"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="state in ['audit_approved','rejected']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,line_manager_approved,admin_assistant_approved,admin_manager_approved,director_approved,audit_approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Requisition Reference..."/>
+                            <span class="oe_badge"
+                                  invisible="state != 'audit_approved'"
+                                  style="background-color: #28a745; color: white; padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-left: 10px;">
+                                ✅ Approved
+                            </span>
+                        </h1>
+                    </div>
+
+                    <group name="main_group">
+                        <group name="left_group">
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="station_id" readonly="1"/>
+                            <field name="product_id" readonly="state != 'draft'"/>
+                            <field name="quantity" readonly="state != 'draft'"/>
+                            <field name="estimated_cost" readonly="state != 'draft'" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_cost" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group name="right_group">
+                            <field name="destination_location" readonly="state != 'draft'"/>
+                            <field name="required_date" readonly="state != 'draft'"/>
+                            <field name="status_display" readonly="1" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group name="bundle_group" string="Bundle Information" invisible="not is_bundle_requisition">
+                        <field name="is_bundle_requisition" invisible="1"/>
+                        <group name="bundle_left">
+                            <field name="quantity_in_bundles" string="Bundles" readonly="1"/>
+                            <field name="bundle_uom_id" string="Bundle UOM" readonly="1"/>
+                        </group>
+                        <group name="bundle_right">
+                            <field name="bundle_quantity" string="Units per Bundle" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Purpose">
+                        <field name="purpose" readonly="state != 'draft'"/>
+                    </group>
+
+                    <!-- ============================================================ -->
+                    <!-- APPROVAL TIMELINE -->
+                    <!-- ============================================================ -->
+                    <group string="Approval Timeline" colspan="4">
+                        <group>
+                            <field name="submitted_date" readonly="1" invisible="not submitted_date"/>
+                            <field name="line_manager_approval_date" readonly="1" invisible="not line_manager_approval_date"/>
+                            <field name="admin_assistant_approval_date" readonly="1" invisible="not admin_assistant_approval_date"/>
+                        </group>
+                        <group>
+                            <field name="admin_manager_approval_date" readonly="1" invisible="not admin_manager_approval_date"/>
+                            <field name="director_approval_date" readonly="1" invisible="not director_approval_date"/>
+                            <field name="audit_approval_date" readonly="1" invisible="not audit_approval_date"/>
+                        </group>
+                    </group>
+
+                    <!-- ============================================================ -->
+                    <!-- APPROVER COMMENTS -->
+                    <!-- ============================================================ -->
+                    <group string="Approver Comments" colspan="4">
+                        <field name="line_manager_comment" string="Line Manager Comment" readonly="1" invisible="not line_manager_comment" colspan="2"/>
+                        <field name="admin_assistant_comment" string="Admin Assistant Comment" readonly="1" invisible="not admin_assistant_comment" colspan="2"/>
+                        <field name="admin_manager_comment" string="Admin Manager Comment" readonly="1" invisible="not admin_manager_comment" colspan="2"/>
+                        <field name="director_comment" string="Director Comment" readonly="1" invisible="not director_comment" colspan="2"/>
+                        <field name="audit_comment" string="Audit Comment" readonly="1" invisible="not audit_comment" colspan="2"/>
+                        <field name="rejection_reason" string="Rejection Reason" readonly="1" invisible="state != 'rejected'" colspan="2"/>
+                    </group>
+
+                    <!-- ============================================================ -->
+                    <!-- STOCK MOVE LINK -->
+                    <!-- ============================================================ -->
+                    <group string="Stock Move" colspan="4" invisible="not stock_move_id">
+                        <field name="stock_move_id" readonly="1"/>
+                    </group>
+
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_una_requisition_search" model="ir.ui.view">
+        <field name="name">una.requisition.search</field>
+        <field name="model">una.requisition</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Reference"/>
+                <field name="employee_id" string="Employee"/>
+                <field name="department_id" string="Department"/>
+                <field name="station_id" string="Station"/>
+                <field name="product_id" string="Product"/>
+                <field name="state" string="Status"/>
+
+                <separator/>
+
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="submitted" string="Submitted" domain="[('state','=','submitted')]"/>
+                <filter name="approved" string="Approved" domain="[('state','=','audit_approved')]"/>
+                <filter name="rejected" string="Rejected" domain="[('state','=','rejected')]"/>
+
+                <separator/>
+
+                <filter name="my_requisitions" string="My Requisitions"
+                        domain="[('employee_id.user_id','=',uid)]"/>
+                <filter name="my_department" string="My Department"
+                        domain="[('department_id','=',uid.employee_id.department_id.id)]"/>
+
+                <separator/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_by_state" string="Status" context="{'group_by':'state'}"/>
+                    <filter name="group_by_department" string="Department" context="{'group_by':'department_id'}"/>
+                    <filter name="group_by_station" string="Station" context="{'group_by':'station_id'}"/>
+                    <filter name="group_by_product" string="Product" context="{'group_by':'product_id'}"/>
+                    <filter name="group_by_employee" string="Employee" context="{'group_by':'employee_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- ASSET DAMAGE REPORT VIEWS (CLEAN AND ORGANIZED)              -->
+    <!-- ============================================================ -->
+
+    <!-- Damage Report Action -->
+    <record id="action_una_asset_damage_report" model="ir.actions.act_window">
+        <field name="name">Asset Damage Reports</field>
+        <field name="res_model">una.asset.damage.report</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Manage asset damage reports submitted by employees
+            </p>
+        </field>
+    </record>
+
+    <!-- Damage Report Tree View -->
+    <record id="view_una_asset_damage_report_tree" model="ir.ui.view">
+        <field name="name">una.asset.damage.report.tree</field>
+        <field name="model">una.asset.damage.report</field>
+        <field name="arch" type="xml">
+            <tree string="Asset Damage Reports">
+                <field name="asset_tag"/>
+                <field name="asset_name"/>
+                <field name="serial_number"/>
+                <field name="employee_name"/>
+                <field name="line_manager_name"/>
+                <field name="damage_severity" widget="badge"/>
+                <field name="status" widget="badge"/>
+                <field name="source" widget="badge"/>
+                <field name="reported_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_una_asset_damage_report_form" model="ir.ui.view">
+        <field name="name">una.asset.damage.report.form</field>
+        <field name="model">una.asset.damage.report</field>
+        <field name="arch" type="xml">
+            <form string="Asset Damage Report">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="status != 'draft'"/>
+                    <button name="action_line_manager_approve" string="Approve (Line Mgr)" type="object" class="btn-primary" invisible="status != 'submitted'"/>
+                    <button name="action_line_manager_reject" string="Reject (Line Mgr)" type="object" class="btn-danger" invisible="status != 'submitted'"/>
+                    <button name="action_admin_approve" string="Approve &amp; Scrap" type="object" class="btn-success" invisible="status not in ['submitted', 'line_manager_approved']"/>
+                    <button name="action_admin_reject" string="Reject (Admin)" type="object" class="btn-danger" invisible="status not in ['submitted', 'line_manager_approved']"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object" class="btn-warning" invisible="status != 'rejected'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,submitted,line_manager_approved,admin_approved,rejected,scrapped"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="asset_name" class="oe_edit_only" string="Asset Name"/>
+                        <h1>
+                            <field name="asset_name" placeholder="e.g. Dell Latitude Laptop..."/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Asset Information">
+                            <field name="asset_id"/>
+                            <field name="asset_tag" readonly="1"/>
+                            <field name="serial_number" readonly="1"/>
+                            <field name="damage_severity" widget="priority"/>
+                        </group>
+                        <group string="Employee Information">
+                            <field name="employee_id"/>
+                            <field name="employee_name" readonly="1"/>
+                            <field name="line_manager_id" readonly="1"/>
+                            <field name="line_manager_name" readonly="1"/>
+                            <field name="source" readonly="1" widget="badge"/>
+                            <field name="reported_date"/>
+                        </group>
+                    </group>
+
+                    <group string="Damage Details">
+                        <field name="damage_description" placeholder="Describe how the damage occurred and the current state of the asset..." colspan="2"/>
+                    </group>
+
+                    <group string="Approval &amp; Audit Timeline">
+                        <group>
+                            <field name="submitted_date" readonly="1"/>
+                            <field name="line_manager_approval_date" readonly="1"/>
+                            <field name="admin_approval_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="reviewed_date" readonly="1"/>
+                            <field name="reviewed_by" readonly="1"/>
+                            <field name="stock_move_id" readonly="1"/>
+                            <field name="rejection_reason" invisible="status != 'rejected'"/>
+                        </group>
+                    </group>
+
+                    <group string="Comments" invisible="not (line_manager_comment or admin_comment)">
+                        <field name="line_manager_comment" readonly="1" invisible="not line_manager_comment" colspan="2"/>
+                        <field name="admin_comment" readonly="1" invisible="not admin_comment" colspan="2"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Damage Report Search View -->
+    <record id="view_una_asset_damage_report_search" model="ir.ui.view">
+        <field name="name">una.asset.damage.report.search</field>
+        <field name="model">una.asset.damage.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="asset_name" string="Asset Name"/>
+                <field name="asset_tag" string="Asset Tag"/>
+                <field name="serial_number" string="Serial Number"/>
+                <field name="employee_name" string="Reported By"/>
+                <field name="line_manager_name" string="Line Manager"/>
+                <field name="status" string="Status"/>
+                <field name="damage_severity" string="Severity"/>
+
+                <separator/>
+
+                <filter name="draft" string="Draft" domain="[('status','=','draft')]"/>
+                <filter name="submitted" string="Submitted" domain="[('status','=','submitted')]"/>
+                <filter name="line_manager_approved" string="Line Mgr Approved" domain="[('status','=','line_manager_approved')]"/>
+                <filter name="admin_approved" string="Admin Approved" domain="[('status','=','admin_approved')]"/>
+                <filter name="rejected" string="Rejected" domain="[('status','=','rejected')]"/>
+                <filter name="scrapped" string="Scrapped" domain="[('status','=','scrapped')]"/>
+
+                <separator/>
+
+                <filter name="portal_reports" string="From Portal" domain="[('source','=','portal')]"/>
+                <filter name="internal_reports" string="From Internal" domain="[('source','=','internal')]"/>
+
+                <separator/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_by_status" string="Status" context="{'group_by':'status'}"/>
+                    <filter name="group_by_severity" string="Severity" context="{'group_by':'damage_severity'}"/>
+                    <filter name="group_by_source" string="Source" context="{'group_by':'source'}"/>
+                    <filter name="group_by_employee" string="Reported By" context="{'group_by':'employee_id'}"/>
+                    <filter name="group_by_line_manager" string="Line Manager" context="{'group_by':'line_manager_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

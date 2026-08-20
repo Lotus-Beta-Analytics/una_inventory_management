@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_una_product" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="res_model">una.product</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create products to manage in inventory
+            </p>
+        </field>
+    </record>
+
+    <record id="view_una_product_tree" model="ir.ui.view">
+        <field name="name">una.product.tree</field>
+        <field name="model">una.product</field>
+        <field name="arch" type="xml">
+            <tree string="Products" decoration-info="product_type == 'bundle'" create="1" edit="1" delete="1" import="1">                <field name="currency_id" column_invisible="True"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="product_type" widget="badge"/>
+                <field name="cost_price" sum="Total Cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="is_serial_tracked" widget="boolean"/>
+                <field name="is_bundle" widget="boolean_toggle" string="Bundle?"/>
+                <field name="active" widget="boolean"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_una_product_form" model="ir.ui.view">
+        <field name="name">una.product.form</field>
+        <field name="model">una.product</field>
+        <field name="arch" type="xml">
+            <form string="Product">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Product Name..."/>
+                        </h1>
+                        <h5>
+                            <field name="code" placeholder="Product Code..."/>
+                        </h5>
+                    </div>
+                    <group>
+                        <group string="Basic Information">
+                            <field name="product_type"/>
+                            <field name="uom_id"/>
+                            <field name="is_serial_tracked"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Pricing">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="cost_price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                    </group>
+
+                    <group string="Bundle Configuration" colspan="4">
+                        <group colspan="2">
+                            <field name="is_bundle" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Bundle Details" colspan="2" invisible="not is_bundle">
+                            <field name="bundle_uom_id"
+                                   options="{'no_create': True}"
+                                   help="Select the bundle UOM (e.g., Box, Carton, Pack)"
+                                   placeholder="Select Bundle UOM..."/>
+                            <field name="bundle_quantity"
+                                   help="How many base units are in one bundle?"
+                                   placeholder="e.g., 10"/>
+                            <field name="bundle_display_name"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Stock Levels" invisible="product_type != 'consumable'">
+                        <group>
+                            <field name="min_stock"/>
+                            <field name="max_stock"/>
+                            <field name="reorder_point"/>
+                        </group>
+                    </group>
+
+                    <group string="Description">
+                        <field name="description"
+                               widget="text"
+                               placeholder="Type detailed product specs, operational notes, or aviation compliance info here..."
+                               nolabel="1"
+                               colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_una_product_search" model="ir.ui.view">
+        <field name="name">una.product.search</field>
+        <field name="model">una.product</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Product"/>
+                <field name="code" string="Code"/>
+                <field name="product_type"/>
+                <separator/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
+                <filter name="assets" string="Assets" domain="[('product_type','=','asset')]"/>
+                <filter name="consumables" string="Consumables" domain="[('product_type','=','consumable')]"/>
+                <filter name="bundle_products" string="Bundle Products" domain="[('is_bundle','=',True)]"/>
+                <filter name="serial_tracked" string="Serial Tracked" domain="[('is_serial_tracked','=',True)]"/>
+                <filter name="no_serial" string="No Serial" domain="[('is_serial_tracked','=',False)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_type" string="Type" context="{'group_by':'product_type'}"/>
+                    <filter name="group_by_serial" string="Serial Tracking" context="{'group_by':'is_serial_tracked'}"/>
+                    <filter name="group_by_bundle" string="Bundle Product" context="{'group_by':'is_bundle'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

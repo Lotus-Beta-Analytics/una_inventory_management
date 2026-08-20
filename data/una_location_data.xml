@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ================================================================ -->
+        <!-- UNITED NIGERIA AIRLINES - ADMIN CENTRAL OFFICE                  -->
+        <!-- ================================================================ -->
+
+        <!-- ADMIN CENTRAL OFFICE - Main Admin Office (Overrides UI) -->
+        <record id="location_admin_central_office" model="una.location">
+            <field name="name">ADMIN CENTRAL OFFICE</field>
+            <field name="code">ADMIN-CENTRAL</field>
+            <field name="is_admin_office">True</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- UNITED NIGERIA AIRLINES - OFFICE LOCATIONS                      -->
+        <!-- ================================================================ -->
+
+        <!-- Lagos Headquarters -->
+        <record id="location_lagos_hq" model="una.location">
+            <field name="name">Lagos - Headquarters</field>
+            <field name="code">LAG-HQ</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Lagos Main Office -->
+        <record id="location_lagos_main_office" model="una.location">
+            <field name="name">Lagos - Main Office</field>
+            <field name="code">LAG-MAIN</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Lagos - Maima Office (Near Ikeja Airport) -->
+        <record id="location_lagos_maima_office" model="una.location">
+            <field name="name">Lagos - Maima Office</field>
+            <field name="code">LAG-MAIMA</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Abuja Office -->
+        <record id="location_abuja_office" model="una.location">
+            <field name="name">Abuja - Main Office</field>
+            <field name="code">ABV-OFFICE</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Port Harcourt Office -->
+        <record id="location_phc_office" model="una.location">
+            <field name="name">Port Harcourt - Office</field>
+            <field name="code">PHC-OFFICE</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Enugu Office -->
+        <record id="location_enugu_office" model="una.location">
+            <field name="name">Enugu - Office</field>
+            <field name="code">ENU-OFFICE</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Kano Office -->
+        <record id="location_kano_office" model="una.location">
+            <field name="name">Kano - Office</field>
+            <field name="code">KAN-OFFICE</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Ibadan Office -->
+        <record id="location_ibadan_office" model="una.location">
+            <field name="name">Ibadan - Office</field>
+            <field name="code">IBD-OFFICE</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Benin Office -->
+        <record id="location_benin_office" model="una.location">
+            <field name="name">Benin - Office</field>
+            <field name="code">BEN-OFFICE</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- UNITED NIGERIA AIRLINES - WAREHOUSES                            -->
+        <!-- ================================================================ -->
+
+        <!-- Lagos Main Warehouse -->
+        <record id="location_lagos_warehouse" model="una.location">
+            <field name="name">Lagos - Main Warehouse</field>
+            <field name="code">LAG-WH</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Lagos Airport Warehouse -->
+        <record id="location_lagos_airport_warehouse" model="una.location">
+            <field name="name">Lagos - Airport Warehouse</field>
+            <field name="code">LAG-AIR-WH</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Abuja Warehouse -->
+        <record id="location_abuja_warehouse" model="una.location">
+            <field name="name">Abuja - Warehouse</field>
+            <field name="code">ABV-WH</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Port Harcourt Warehouse -->
+        <record id="location_phc_warehouse" model="una.location">
+            <field name="name">Port Harcourt - Warehouse</field>
+            <field name="code">PHC-WH</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- UNITED NIGERIA AIRLINES - AIRPORTS                              -->
+        <!-- ================================================================ -->
+
+        <!-- Murtala Muhammed Airport, Lagos (Ikeja) -->
+        <record id="location_mma_airport" model="una.location">
+            <field name="name">MMIA - Lagos Airport (Ikeja)</field>
+            <field name="code">LAG-AIRPORT</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Nnamdi Azikiwe Airport, Abuja -->
+        <record id="location_abuja_airport" model="una.location">
+            <field name="name">NAIA - Abuja Airport</field>
+            <field name="code">ABV-AIRPORT</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Port Harcourt Airport -->
+        <record id="location_phc_airport" model="una.location">
+            <field name="name">PHIA - Port Harcourt Airport</field>
+            <field name="code">PHC-AIRPORT</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Enugu Airport -->
+        <record id="location_enugu_airport" model="una.location">
+            <field name="name">ENU - Enugu Airport</field>
+            <field name="code">ENU-AIRPORT</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Kano Airport -->
+        <record id="location_kano_airport" model="una.location">
+            <field name="name">KAN - Kano Airport</field>
+            <field name="code">KAN-AIRPORT</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Ibadan Airport -->
+        <record id="location_ibadan_airport" model="una.location">
+            <field name="name">IBAN - Ibadan Airport</field>
+            <field name="code">IBD-AIRPORT</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Benin Airport -->
+        <record id="location_benin_airport" model="una.location">
+            <field name="name">BEN - Benin Airport</field>
+            <field name="code">BEN-AIRPORT</field>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>

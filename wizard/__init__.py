@@ -1,0 +1,1 @@
+from . import assign_asset_wizard

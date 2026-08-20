@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Location Action -->
+    <record id="action_una_location" model="ir.actions.act_window">
+        <field name="name">Locations</field>
+        <field name="res_model">una.location</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create locations for inventory storage
+            </p>
+        </field>
+    </record>
+
+    <!-- Location Tree View -->
+    <record id="view_una_location_tree" model="ir.ui.view">
+        <field name="name">una.location.tree</field>
+        <field name="model">una.location</field>
+        <field name="arch" type="xml">
+            <tree string="Locations" create="1" edit="1" delete="1" import="1">
+                <field name="code"/>
+                <field name="display_name"/>
+                <field name="parent_location_id"/>
+                <field name="warehouse_id" optional="hide"/>
+                <field name="station_id" optional="hide"/>
+                <field name="is_admin_office" widget="boolean" optional="show"/>
+                <field name="is_vendor_location" widget="boolean" optional="show"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="active" widget="boolean"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Location Form View -->
+    <record id="view_una_location_form" model="ir.ui.view">
+        <field name="name">una.location.form</field>
+        <field name="model">una.location</field>
+        <field name="arch" type="xml">
+            <form string="Location">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Location Name..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <!-- Parent Location first -->
+                            <field name="parent_location_id"
+                                   domain="[('id', '!=', id)]"
+                                   help="Select parent location. Warehouse and Station will be inherited from parent."/>
+                            <!-- Warehouse only shows if no parent selected or parent has no warehouse -->
+                            <field name="warehouse_id"
+                                   invisible="parent_location_id != False and parent_location_id.warehouse_id != False"
+                                   help="Warehouse is auto-inherited from parent location if set."/>
+                            <!-- Station only shows if no parent selected or parent has no station -->
+                            <field name="station_id"
+                                   invisible="parent_location_id != False and parent_location_id.station_id != False"
+                                   help="Station is auto-inherited from parent location if set."/>
+                            <!-- Admin Office flag -->
+                            <field name="is_admin_office"
+                                   help="Mark this location as the main Admin Office (central store)"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="display_name" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Vendor Location Section -->
+                    <group string="Vendor Information"
+                           invisible="not is_vendor_location">
+                        <field name="is_vendor_location"
+                               help="Mark this location as a vendor/supplier location"/>
+                        <field name="partner_id"
+                               string="Vendor/Supplier"
+                               domain="[('is_company', '=', True)]"
+                               help="Associated vendor for this location"
+                               required="is_vendor_location"/>
+                    </group>
+
+                    <!-- FIXED: Admin Office Info with full width (colspan="2" on div) -->
+                    <group string="Admin Office"
+                           invisible="not is_admin_office">
+                        <div class="alert alert-info" role="alert" style="margin-top: 5px; margin-bottom: 5px; width: 100%;" colspan="2">
+                            <i class="fa fa-info-circle"/> This is the main <strong>Admin Office/Central Store</strong> location.
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Location Search View -->
+    <record id="view_una_location_search" model="ir.ui.view">
+        <field name="name">una.location.search</field>
+        <field name="model">una.location</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Location"/>
+                <field name="code" string="Code"/>
+                <field name="parent_location_id"/>
+                <field name="warehouse_id"/>
+                <field name="station_id"/>
+                <field name="partner_id" string="Vendor"/>
+                <separator/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
+                <filter name="admin_office" string="Admin Office" domain="[('is_admin_office','=',True)]"/>
+                <filter name="vendor_location" string="Vendor Locations" domain="[('is_vendor_location','=',True)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_parent" string="Parent Location" context="{'group_by':'parent_location_id'}"/>
+                    <filter name="group_by_warehouse" string="Warehouse" context="{'group_by':'warehouse_id'}"/>
+                    <filter name="group_by_station" string="Station" context="{'group_by':'station_id'}"/>
+                    <filter name="group_by_partner" string="Vendor" context="{'group_by':'partner_id'}"/>
+                    <filter name="group_by_admin" string="Admin Office" context="{'group_by':'is_admin_office'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

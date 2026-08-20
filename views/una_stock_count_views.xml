@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_una_stock_count" model="ir.actions.act_window">
+        <field name="name">Stock Counts</field>
+        <field name="res_model">una.stock.count</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Weekly stock counts and reconciliation
+            </p>
+        </field>
+    </record>
+
+    <record id="view_una_stock_count_tree" model="ir.ui.view">
+        <field name="name">una.stock.count.tree</field>
+        <field name="model">una.stock.count</field>
+        <field name="arch" type="xml">
+            <tree string="Stock Counts">
+                <field name="name"/>
+                <field name="location_id"/>
+                <field name="scheduled_date"/>
+                <field name="date"/>
+                <field name="state" widget="badge"/>
+                <field name="total_lines" sum="Total Lines"/>
+                <field name="total_variance" sum="Total Variance"/>
+                <field name="has_discrepancy" widget="boolean"/>
+                <field name="total_expected_value" sum="Total Expected"/>
+                <field name="total_actual_value" sum="Total Actual"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_una_stock_count_form" model="ir.ui.view">
+        <field name="name">una.stock_count.form</field>
+        <field name="model">una.stock.count</field>
+        <field name="arch" type="xml">
+            <form string="Stock Count">
+                <header>
+                    <button name="action_start_count" string="Start Count" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_confirm_count" string="Confirm Count" type="object" class="btn-success" invisible="state != 'in_progress'"/>
+                    <button name="action_cancel" string="Cancel" type="object" class="btn-danger" invisible="state in ['confirmed','cancelled']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,confirmed,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Stock Count..."/>
+                        </h1>
+                    </div>
+
+                    <field name="state" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+
+                    <group>
+                        <group string="Configuration">
+                            <field name="location_id" readonly="state != 'draft'"/>
+                            <field name="scheduled_date" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Totals Summary">
+                            <field name="total_lines" readonly="1"/>
+                            <field name="total_variance" readonly="1"/>
+                            <field name="has_discrepancy" readonly="1" widget="boolean"/>
+                            <field name="total_expected_value" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_actual_value" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                    </group>
+
+                    <group string="Note">
+                        <field name="note" readonly="state != 'draft'"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Count Lines">
+                            <field name="line_ids" readonly="state not in ['draft', 'in_progress']">
+                                <!-- ★ FIX: Removed domain, using top instead of bottom -->
+                                <tree string="Count Lines" editable="top" create="1" delete="1">
+                                    <field name="product_id" options="{'no_create': True}"/>
+                                    <field name="expected_quantity" readonly="1" sum="Total Expected Qty"/>
+                                    <field name="actual_quantity" sum="Total Actual Qty"/>
+                                    <field name="difference" readonly="1" sum="Total Difference"/>
+
+                                    <field name="currency_id" column_invisible="True"/>
+
+                                    <field name="expected_value" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total Expected Value"/>
+                                    <field name="actual_value" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total Actual Value"/>
+                                    <field name="variance_value" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total Variance"/>
+                                    <field name="note"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

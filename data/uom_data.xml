@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Piece (Reference UOM) - in Unit category -->
+    <record id="uom_piece" model="uom.uom">
+        <field name="name">Piece(s)</field>
+        <field name="category_id" ref="uom.product_uom_categ_unit"/>
+        <field name="uom_type">smaller</field>
+        <field name="factor">1.0</field>
+        <field name="rounding">0.01</field>
+    </record>
+
+    <!-- Bundle = 10 Pieces -->
+    <record id="uom_bundle" model="uom.uom">
+        <field name="name">Bundle(s)</field>
+        <field name="category_id" ref="uom.product_uom_categ_unit"/>
+        <field name="uom_type">bigger</field>
+        <field name="factor">10.0</field>
+        <field name="rounding">0.01</field>
+    </record>
+
+    <!-- Carton = 1000 Pieces -->
+    <record id="uom_carton" model="uom.uom">
+        <field name="name">Carton(s)</field>
+        <field name="category_id" ref="uom.product_uom_categ_unit"/>
+        <field name="uom_type">bigger</field>
+        <field name="factor">1000.0</field>
+        <field name="rounding">0.01</field>
+    </record>
+</odoo>

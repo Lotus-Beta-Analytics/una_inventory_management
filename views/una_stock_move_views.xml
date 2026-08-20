@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ================================================================ -->
+        <!-- MAIN STOCK MOVE ACTION                                           -->
+        <!-- ================================================================ -->
+        <record id="action_una_stock_move" model="ir.actions.act_window">
+            <field name="name">Stock Moves</field>
+            <field name="res_model">una.stock.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create stock movements: Receipt, Issue, Transfer, Scrap
+                </p>
+            </field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- PENDING RECEIPTS ACTION                                          -->
+        <!-- ================================================================ -->
+        <record id="action_pending_receipts" model="ir.actions.act_window">
+            <field name="name">Pending Receipt into Inventory</field>
+            <field name="res_model">una.stock.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('move_type', '=', 'receipt'), ('state', '=', 'draft'), ('is_auto_created', '=', True)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    📦 Pending Receipts from Purchase Orders
+                </p>
+                <p>
+                    These receipts are auto-created from purchase orders and are waiting for
+                    admin personnel to confirm them into inventory.
+                </p>
+                <p>
+                    <strong>What to do:</strong><br/>
+                    • Review the product and quantity<br/>
+                    • For serial-tracked products: enter serial numbers<br/>
+                    • Click "Confirm" to add to inventory
+                </p>
+            </field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- MAIN STOCK MOVE VIEWS                                            -->
+        <!-- ================================================================ -->
+        <record id="view_una_stock_move_tree" model="ir.ui.view">
+            <field name="name">una.stock.move.tree</field>
+            <field name="model">una.stock.move</field>
+            <field name="arch" type="xml">
+                <tree string="Stock Moves">
+                    <field name="reference"/>
+                    <field name="move_type" widget="badge"/>
+                    <field name="product_id"/>
+                    <field name="quantity"/>
+                    <field name="source_location"/>
+                    <field name="destination_location"/>
+                    <field name="state" widget="badge"/>
+                    <field name="move_date"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_una_stock_move_form" model="ir.ui.view">
+            <field name="name">una.stock.move.form</field>
+            <field name="model">una.stock.move</field>
+            <field name="arch" type="xml">
+                <form string="Stock Move">
+                    <header>
+                        <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,cancelled"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="reference" placeholder="Reference..."/>
+                            </h1>
+                        </div>
+
+                        <field name="product_type" invisible="1"/>
+                        <field name="requisition_id" invisible="1"/>
+                        <field name="is_serial_tracked" invisible="1"/>
+
+                        <group>
+                            <group>
+                                <field name="product_id" readonly="state != 'draft'"/>
+                                <field name="move_type" readonly="state != 'draft'"/>
+                                <field name="quantity" readonly="state != 'draft'"/>
+
+                                <field name="cost_price_at_move"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="state != 'draft'"
+                                       placeholder="1.00"
+                                       invisible="move_type not in ['receipt', 'scrap']"/>
+
+                                <field name="total_cost"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1"/>
+
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="source_location"
+                                       string="Moving From"
+                                       invisible="(move_type in ['transfer', 'scrap'] and product_type in ['asset', 'consumable']) or (move_type == 'issue' and product_type in ['asset', 'consumable'])"
+                                       readonly="state != 'draft'"
+                                       help="For Issue/Transfer/Scrap, this is auto-set from asset/inventory"/>
+
+                                <field name="auto_source_location"
+                                       string="Asset's Current Location"
+                                       readonly="1"
+                                       invisible="not (move_type in ['issue', 'transfer', 'scrap'] and product_type == 'asset')"/>
+
+                                <field name="destination_location" readonly="state != 'draft'"/>
+                                <field name="move_date" readonly="state != 'draft'"/>
+                                <field name="description" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+
+                        <group string="Bundle Information" invisible="not is_bundle_move">
+                            <field name="is_bundle_move" invisible="1"/>
+                            <group>
+                                <field name="quantity_in_bundles" readonly="1"/>
+                                <field name="bundle_uom_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="quantity_in_units" readonly="1"/>
+                                <field name="bundle_quantity" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group string="Serial Numbers" invisible="not (move_type == 'receipt' and is_serial_tracked) or (move_type == 'issue' and requisition_id)">
+                            <group>
+                                <field name="serial_entry_method" readonly="state != 'draft'"/>
+                                <field name="first_serial_number" invisible="serial_entry_method != 'range'" readonly="state != 'draft'"/>
+                                <field name="generated_serials" invisible="serial_entry_method != 'range'" readonly="1"/>
+                            </group>
+
+                            <group></group>
+
+                            <group colspan="2" invisible="serial_entry_method != 'single'">
+                                <field name="serial_numbers"
+                                       string="Manual Entries"
+                                       placeholder="Enter serial numbers, one per line"
+                                       widget="text"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+
+                        <group string="Select Asset to Move"
+                               invisible="product_type != 'asset' or move_type in ['receipt', 'adjustment']">
+                            <field name="selected_asset_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   domain="[('product_id', '=', product_id), ('status', '=', 'available')]"
+                                   help="Select the asset to move. Only ONE asset can be selected."
+                                   readonly="state != 'draft'">
+                                <tree string="Available Assets">
+                                    <field name="asset_tag"/>
+                                    <field name="serial_number"/>
+                                    <field name="name"/>
+                                    <field name="current_location"/>
+                                    <field name="status" widget="badge"/>
+                                    <field name="cost_price"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- PENDING RECEIPTS TREE VIEW                                       -->
+        <!-- ================================================================ -->
+        <record id="view_pending_receipts_tree" model="ir.ui.view">
+            <field name="name">una.stock.move.pending.receipts.tree</field>
+            <field name="model">una.stock.move</field>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <tree string="Pending Receipts"
+                      decoration-success="state == 'confirmed'"
+                      decoration-warning="state == 'draft'"
+                      decoration-danger="state == 'cancelled'">
+                    <field name="reference" string="Receipt #"/>
+                    <field name="product_id" string="Product"/>
+                    <field name="quantity" string="Qty" sum="Total Qty"/>
+                    <field name="source_location" string="From (Vendor)" optional="show"/>
+                    <field name="destination_location" string="To (Admin Office)" optional="show"/>
+                    <field name="cost_price_at_move" string="Unit Cost" sum="Total Cost"/>
+                    <field name="create_date" string="Created Date"/>
+                    <field name="is_serial_tracked" string="Serial Tracked" optional="show"/>
+                    <field name="purchase_picking_id" string="Source Picking" optional="hide"/>
+                    <field name="is_auto_created" string="Auto Created" optional="show"/>
+                    <field name="state" string="Status" widget="badge"/>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="btn-primary" icon="fa-check"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            icon="fa-times" invisible="state != 'draft'"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- PENDING RECEIPTS SEARCH VIEW                                     -->
+        <!-- ================================================================ -->
+        <record id="view_pending_receipts_search" model="ir.ui.view">
+            <field name="name">una.stock.move.pending.receipts.search</field>
+            <field name="model">una.stock.move</field>
+            <field name="arch" type="xml">
+                <search string="Search Pending Receipts">
+                    <field name="reference" string="Receipt #" placeholder="Search by receipt #..."/>
+                    <field name="product_id" string="Product" placeholder="Search by product..."/>
+                    <field name="source_location" string="From"/>
+                    <field name="destination_location" string="To"/>
+                    <separator/>
+                    <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]" help="Show only draft receipts"/>
+                    <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]" help="Show only confirmed receipts"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_by_state" string="Status" context="{'group_by':'state'}"/>
+                        <filter name="group_by_product" string="Product" context="{'group_by':'product_id'}"/>
+                        <filter name="group_by_source" string="Source Location" context="{'group_by':'source_location'}"/>
+                        <filter name="group_by_destination" string="Destination Location" context="{'group_by':'destination_location'}"/>
+                        <filter name="group_by_create_date" string="Create Date" context="{'group_by':'create_date:day'}"/>
+                        <filter name="group_by_create_month" string="Create Month" context="{'group_by':'create_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- PENDING RECEIPTS FORM VIEW                                       -->
+        <!-- ================================================================ -->
+        <record id="view_pending_receipts_form" model="ir.ui.view">
+            <field name="name">una.stock.move.pending.receipts.form</field>
+            <field name="model">una.stock.move</field>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <form string="Pending Receipt">
+                    <header>
+                        <button name="action_confirm" string="Confirm Receipt" type="object"
+                                class="btn-primary" icon="fa-check"
+                                invisible="state != 'draft'" confirm="Are you sure you want to confirm this receipt? This will add the items to inventory."/>
+                        <button name="action_cancel" string="Cancel" type="object"
+                                icon="fa-times" invisible="state != 'draft'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,cancelled"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="reference" string="Receipt #" placeholder="Receipt #"/>
+                                <field name="is_auto_created" invisible="1"/>
+                                <span class="oe_badge"
+                                      invisible="not is_auto_created"
+                                      style="background-color: #007bff; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
+                                    ⚡ Auto-Created from PO
+                                </span>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Product Details">
+                                <field name="product_id" string="Product" readonly="1"/>
+                                <field name="product_type" string="Type" readonly="1"/>
+                                <field name="quantity" string="Quantity" readonly="1"/>
+                                <field name="is_serial_tracked" invisible="1"/>
+                                <field name="is_bundle_move" invisible="1"/>
+                                <field name="bundle_uom_id" invisible="1"/>
+                                <field name="bundle_quantity" invisible="1"/>
+                            </group>
+                            <group string="Location Details">
+                                <field name="source_location" string="From (Vendor)" readonly="1"/>
+                                <field name="destination_location" string="To (Admin Office)" readonly="1"/>
+                                <field name="cost_price_at_move" string="Unit Cost" readonly="1"/>
+                                <field name="total_cost" string="Total Cost" readonly="1" class="oe_inline"/>
+                            </group>
+                        </group>
+                        <!-- ★ Purchase Order Information -->
+                        <group string="Purchase Order Information" invisible="not is_auto_created">
+                            <field name="purchase_picking_id" string="Source Picking" readonly="1"/>
+                            <field name="purchase_order_id" string="Purchase Order" readonly="1"/>
+                            <field name="odoo_product_id" string="Odoo Product" readonly="1"/>
+                            <field name="create_date" string="Created Date" readonly="1"/>
+                        </group>
+                        <group string="Serial Numbers" invisible="not is_serial_tracked">
+                            <field name="serial_entry_method" string="Entry Method" readonly="1"/>
+                            <field name="serial_numbers" string="Serial Numbers"
+                                   placeholder="Enter one serial number per line"
+                                   nolabel="1"
+                                   invisible="serial_entry_method != 'single'"/>
+                            <field name="first_serial_number" string="First Serial Number"
+                                   invisible="serial_entry_method != 'range'"/>
+                            <field name="generated_serials" string="Generated Serials"
+                                   invisible="serial_entry_method != 'range'"/>
+                        </group>
+                        <group string="Bundle Information" invisible="not is_bundle_move">
+                            <field name="quantity_in_bundles" string="Bundles" readonly="1"/>
+                            <field name="quantity_in_units" string="Total Units" readonly="1"/>
+                            <field name="bundle_uom_id" string="Bundle UOM" readonly="1"/>
+                            <field name="bundle_quantity" string="Units per Bundle" readonly="1"/>
+                        </group>
+                        <group string="Description">
+                            <field name="description" string="Notes" readonly="1" nolabel="1"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

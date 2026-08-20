@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="email_template_requisition_approval" model="mail.template">
+            <field name="name">Requisition Approval Notification</field>
+            <field name="model_id" ref="model_una_requisition"/>
+            <field name="subject">📋 Requisition {{ object.name }} awaits your approval</field>
+            <field name="email_from">{{ object.env.company.email or 'no-reply@una.com' }}</field>
+            <field name="email_to">{{ object._get_approver_email() }}</field>
+            <field name="body_html" type="html">
+                <t t-raw="object._get_email_body()"/>
+            </field>
+        </record>
+
+
+        <record id="email_template_asset_assignment" model="mail.template">
+            <field name="name">Asset Assignment Notification</field>
+            <field name="model_id" ref="model_una_asset"/>
+            <field name="subject">📦 Asset {{ object.serial_number }} assigned to you</field>
+            <field name="email_from">{{ object.env.company.email or 'no-reply@una.com' }}</field>
+            <field name="email_to">{{ object.assigned_to.work_email or object.assigned_to.user_id.email or '' }}</field>
+            <field name="body_html" type="html">
+                <t t-raw="object._get_assignment_email_body()"/>
+            </field>
+        </record>
+
+        <record id="email_template_requisition_ready_issue" model="mail.template">
+            <field name="name">Requisition Ready for Issue</field>
+            <field name="model_id" ref="model_una_requisition"/>
+            <field name="subject">📦 Requisition {{ object.name }} - Ready for Issue</field>
+            <field name="email_from">{{ object.env.company.email or 'no-reply@una.com' }}</field>
+            <field name="body_html" type="html">
+                <t t-raw="object._get_ready_issue_email_body()"/>
+            </field>
+        </record>
+
+        <record id="email_template_asset_assignment" model="mail.template">
+            <field name="name">Asset Assignment Notification</field>
+            <field name="model_id" ref="model_una_asset"/>
+            <field name="subject">📦 Asset {{ object.serial_number }} assigned to you</field>
+            <field name="email_from">{{ object.env.company.email or 'no-reply@una.com' }}</field>
+            <field name="email_to">{{ object.assigned_to.work_email or object.assigned_to.user_id.email or '' }}</field>
+            <field name="body_html" type="html">
+                <t t-raw="object._get_assignment_email_body()"/>
+            </field>
+        </record>
+        <record id="email_template_pending_receipt" model="mail.template">
+            <field name="name">Pending Receipt Notification</field>
+            <field name="model_id" ref="model_una_stock_move"/>
+            <field name="subject">📦 New Pending Receipt: {{ object.reference }}</field>
+            <field name="email_from">{{ object.env.company.email or 'no-reply@flyunitednigeria.com' }}</field>
+            <field name="email_to">{{ object._get_admin_email() }}</field>
+            <field name="email_cc">{{ object._get_admin_manager_email() }}</field>
+            <field name="body_html">
+                <![CDATA[
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f7fc; border-radius: 8px;">
+                        <div style="background: linear-gradient(135deg, #1a237e, #0d47a1); padding: 20px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                            <h1 style="color: white; margin: 0; font-size: 24px;">📦 New Pending Receipt</h1>
+                            <p style="color: #a9c2e6; margin: 5px 0 0;">United Nigeria Airlines - Inventory Management</p>
+                        </div>
+                        <div style="background: white; padding: 30px; border-radius: 0 0 8px 8px;">
+                            <p style="font-size: 16px; color: #333;">Dear Admin Team,</p>
+                            <p style="font-size: 14px; color: #555;">
+                                A new receipt has been auto-created from a purchase order and is awaiting your confirmation.
+                            </p>
+
+                            <h3 style="color: #1a237e; border-bottom: 2px solid #e8eaf6; padding-bottom: 10px;">📋 Receipt Details</h3>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                <tr><td style="padding: 8px 12px; font-weight: bold; width: 40%;">Reference:</td>
+                                    <td style="padding: 8px 12px;">{{ object.reference }}</td></tr>
+                                <tr><td style="padding: 8px 12px; font-weight: bold;">Product:</td>
+                                    <td style="padding: 8px 12px;">{{ object.product_id.name }}</td></tr>
+                                <tr><td style="padding: 8px 12px; font-weight: bold;">Quantity:</td>
+                                    <td style="padding: 8px 12px;">{{ object.quantity }}</td></tr>
+                                <tr><td style="padding: 8px 12px; font-weight: bold;">From (Vendor):</td>
+                                    <td style="padding: 8px 12px;">{{ object.source_location.name or 'N/A' }}</td></tr>
+                                <tr><td style="padding: 8px 12px; font-weight: bold;">To (Admin Office):</td>
+                                    <td style="padding: 8px 12px;">{{ object.destination_location.name or 'N/A' }}</td></tr>
+                                <tr><td style="padding: 8px 12px; font-weight: bold;">Status:</td>
+                                    <td style="padding: 8px 12px;"><span style="background: #ff9800; color: white; padding: 2px 12px; border-radius: 12px;">DRAFT - Awaiting Confirmation</span></td></tr>
+                            </table>
+
+                            <div style="text-align: center; margin: 25px 0;">
+                                <a href="{{ object._get_receipt_url() }}" style="display: inline-block; background: #1a237e; color: white; text-decoration: none; padding: 12px 35px; border-radius: 6px; font-weight: 600;">
+                                    🔍 View Receipt
+                                </a>
+                            </div>
+
+                            <div style="background: #fff3e0; padding: 12px 18px; border-radius: 4px; border-left: 4px solid #ff9800; margin: 15px 0;">
+                                <p style="margin: 0; font-size: 13px; color: #555;">
+                                    <strong>💡 Action Required:</strong> Please review and confirm this receipt.
+                                    <br/>
+                                    This will add the items to inventory.
+                                </p>
+                            </div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; font-size: 12px; color: #777; background: #f4f7fc; border-radius: 0 0 8px 8px;">
+                            <p style="margin: 0;">This is an automated notification from United Nigeria Airlines Inventory System.</p>
+                        </div>
+                    </div>
+                ]]>
+            </field>
+        </record>
+    </data>
+</odoo>

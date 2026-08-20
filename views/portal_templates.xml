@@ -1,0 +1,805 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_employee_hub_requisitions_card"
+              name="Requisitions Card"
+              inherit_id="una_employee_hub.portal_my_employee_hub">
+        <xpath expr="//div[@id='employee_hub_grid']" position="inside">
+            <div class="col-md-6 col-lg-4">
+                <a href="/my/requisitions" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm border-0 p-4 text-center transition-card">
+                        <div class="py-4">
+                            <i class="fa fa-cart-plus fa-3x text-primary mb-3"></i>
+                            <h4 class="fw-bold text-dark">Requisitions</h4>
+                            <p class="text-muted small">Request items &amp; track approvals</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="portal_my_requisitions" name="My Requisitions">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_search" t-value="False"/>
+
+            <div class="container py-4">
+                <t t-if="success_message">
+                    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" id="success_alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-check-circle fa-2x me-3 text-success"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-success">Success!</h6>
+                                <p class="mb-0 small">Your requisition has been created successfully.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <script>
+                        setTimeout(function() {
+                            var alert = document.getElementById('success_alert');
+                            if (alert) {
+                                alert.style.transition = 'opacity 0.5s ease';
+                                alert.style.opacity = '0';
+                                setTimeout(function() {
+                                    alert.style.display = 'none';
+                                }, 500);
+                            }
+                        }, 5000);
+                    </script>
+                </t>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <a href="/my/asset/damage-report" class="text-decoration-none">
+                            <div class="card border-danger shadow-sm">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <i class="fa fa-exclamation-triangle fa-2x text-danger me-3"></i>
+                                        <span class="fw-bold text-dark">Report Damaged Asset</span>
+                                        <span class="text-muted small ms-2">Click here to report a damaged asset for review</span>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">
+                                        <i class="fa fa-arrow-right me-1"></i> Report Now
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Header -->
+                <div class="card shadow-sm border-0 mb-4 text-white" style="background: linear-gradient(45deg, #002d5a, #0056b3);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-1 fw-bold">My Requisitions</h2>
+                                <p class="mb-0 opacity-75">Request and track inventory items</p>
+                            </div>
+                            <div>
+                                <a href="/my/requisition/new" class="btn btn-light btn-lg rounded-pill shadow-sm">
+                                    <i class="fa fa-plus me-2"/> New Request
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs: Active / History / Damage Reports -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/my/requisitions">
+                            <i class="fa fa-list me-1"/> Active
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my/requisitions/history">
+                            <i class="fa fa-history me-1"/> History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my/requisitions/damage-reports">
+                            <i class="fa fa-exclamation-triangle me-1"/> Damage Reports
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Requisitions List -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <t t-if="requisitions">
+                            <div class="list-group list-group-flush">
+                                <t t-foreach="requisitions" t-as="req">
+                                    <a t-attf-href="/my/requisition/#{req.id}" class="list-group-item list-group-item-action px-4 py-3 border-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">
+                                                    <t t-esc="req.name"/>
+                                                    <span t-attf-class="badge ms-2 #{'bg-secondary' if req.state == 'draft' else 'bg-warning' if req.state == 'submitted' else 'bg-info' if req.state in ['line_manager_approved','admin_assistant_approved','admin_manager_approved','director_approved'] else 'bg-success' if req.state in ['audit_approved'] else 'bg-danger'}">
+                                                        <t t-esc="dict(req._fields['state'].selection).get(req.state, req.state)"/>
+                                                    </span>
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <t t-esc="req.product_id.name"/>
+                                                    <span class="mx-2">•</span>
+                                                    <t t-esc="req.quantity"/>
+                                                    <span class="mx-2">•</span>
+                                                    <t t-esc="req.destination_location.display_name"/>
+                                                </small>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="small text-muted">
+                                                    <i class="fa fa-calendar me-1"/>
+                                                    <span t-field="req.required_date" t-options='{"widget": "date"}'/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="p-5 text-center">
+                                <i class="fa fa-cart-plus fa-4x text-muted opacity-25 mb-3"></i>
+                                <h5 class="text-muted">No active requisitions found</h5>
+                                <p class="text-muted small">Click "New Request" to create your first requisition.</p>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_requisition_detail" name="Requisition Detail">
+        <t t-call="portal.portal_layout">
+            <div class="container py-4">
+                <div class="row justify-content-center">
+                    <div class="col-lg-9">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <a href="/my/requisitions" class="text-decoration-none text-muted">
+                                    <i class="fa fa-arrow-left me-2"/> Back to Requisitions
+                                </a>
+                                <h2 class="fw-bold mt-2">
+                                    <t t-esc="requisition.name"/>
+                                    <span t-attf-class="badge ms-2 #{'bg-secondary' if requisition.state == 'draft' else 'bg-warning' if requisition.state == 'submitted' else 'bg-info' if requisition.state in ['line_manager_approved','admin_assistant_approved','admin_manager_approved','director_approved'] else 'bg-success' if requisition.state in ['audit_approved'] else 'bg-danger'}">
+                                        <t t-esc="dict(requisition._fields['state'].selection).get(requisition.state, requisition.state)"/>
+                                    </span>
+                                </h2>
+                            </div>
+                            <t t-if="requisition.state in ['draft', 'submitted']">
+                                <form t-attf-action="/my/requisition/cancel/#{requisition.id}" method="post">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <button type="submit" class="btn btn-outline-danger">Cancel Request</button>
+                                </form>
+                            </t>
+                        </div>
+
+                        <!-- Requisition Details -->
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold text-muted text-uppercase">Product</label>
+                                        <h5 class="fw-bold"><t t-esc="requisition.product_id.name"/></h5>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold text-muted text-uppercase">Quantity</label>
+                                        <h5 class="fw-bold"><t t-esc="requisition.quantity"/></h5>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold text-muted text-uppercase">Destination Location</label>
+                                        <h6 class="fw-bold"><t t-esc="requisition.destination_location.display_name"/></h6>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold text-muted text-uppercase">Required By</label>
+                                        <h6 class="fw-bold"><span t-field="requisition.required_date" t-options='{"widget": "date"}'/></h6>
+                                    </div>
+                                </div>
+                                <t t-if="requisition.purpose">
+                                    <hr/>
+                                    <label class="small fw-bold text-muted text-uppercase">Purpose</label>
+                                    <p class="mt-1"><t t-esc="requisition.purpose"/></p>
+                                </t>
+
+                                <!-- Approval History -->
+                                <hr/>
+                                <h6 class="fw-bold text-primary">Approval History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td class="fw-bold">Submitted:</td>
+                                            <td><span t-field="requisition.submitted_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                        <tr t-if="requisition.line_manager_approval_date">
+                                            <td class="fw-bold">Line Manager:</td>
+                                            <td><span t-field="requisition.line_manager_approval_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                        <tr t-if="requisition.admin_assistant_approval_date">
+                                            <td class="fw-bold">Admin Assistant:</td>
+                                            <td><span t-field="requisition.admin_assistant_approval_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                        <tr t-if="requisition.admin_manager_approval_date">
+                                            <td class="fw-bold">Admin Manager:</td>
+                                            <td><span t-field="requisition.admin_manager_approval_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                        <tr t-if="requisition.director_approval_date">
+                                            <td class="fw-bold">Director of Admin:</td>
+                                            <td><span t-field="requisition.director_approval_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                        <tr t-if="requisition.audit_approval_date">
+                                            <td class="fw-bold">Audit:</td>
+                                            <td><span t-field="requisition.audit_approval_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- Stock Move Link -->
+                                <t t-if="requisition.stock_move_id">
+                                    <hr/>
+                                    <div class="alert alert-success border-0 mb-0">
+                                        <i class="fa fa-check-circle me-2"/>
+                                        Stock Move <strong><t t-esc="requisition.stock_move_id.reference"/></strong> created from this requisition.
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+
+    <template id="portal_requisition_new" name="New Requisition">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_search" t-value="False"/>
+
+            <div class="container py-4">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <!-- Error Message - Auto Dismiss -->
+                        <t t-if="error">
+                            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" id="error_alert">
+                                <i class="fa fa-exclamation-circle me-2"/> <t t-esc="error"/>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <!-- Auto-dismiss script -->
+                            <script>
+                                setTimeout(function() {
+                                    var alert = document.getElementById('error_alert');
+                                    if (alert) {
+                                        alert.style.transition = 'opacity 0.5s ease';
+                                        alert.style.opacity = '0';
+                                        setTimeout(function() {
+                                            alert.style.display = 'none';
+                                        }, 500);
+                                    }
+                                }, 5000);
+                            </script>
+                        </t>
+
+                        <!-- Header -->
+                        <div class="card shadow-sm border-0 mb-4 text-white" style="background: linear-gradient(45deg, #002d5a, #0056b3);">
+                            <div class="card-body p-4">
+                                <h2 class="mb-1 fw-bold">New Requisition</h2>
+                                <p class="mb-0 opacity-75">Request items for your department</p>
+                            </div>
+                        </div>
+
+                        <!-- Employee Info Card - Shows Department and Station -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-3 bg-light">
+                                <div class="row text-center text-md-start">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Department</small>
+                                        <h6 class="fw-bold mb-0">
+                                            <t t-esc="employee_department"/>
+                                        </h6>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Station</small>
+                                        <h6 class="fw-bold mb-0">
+                                            <t t-esc="employee_station"/>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form -->
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <form action="/my/requisition/create" method="post" id="requisition_form">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                    <!-- Product -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Product</label>
+                                        <select name="product_id" class="form-select border-2" required="1">
+                                            <option value="">Select a product...</option>
+                                            <t t-foreach="products" t-as="p">
+                                                <option t-att-value="p.id">
+                                                    <t t-esc="p.code"/> - <t t-esc="p.name"/> (<t t-esc="p.product_type"/>)
+                                                </option>
+                                            </t>
+                                        </select>
+                                        <div class="form-text text-muted small">Select the product you need.</div>
+                                    </div>
+
+                                    <!-- Quantity -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Quantity</label>
+                                        <input type="number" name="quantity" step="0.01" min="0.01" class="form-control border-2" required="1"/>
+                                    </div>
+
+                                    <!-- Destination Location -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Destination Location</label>
+                                        <select name="destination_location" class="form-select border-2" required="1">
+                                            <option value="">Select destination location...</option>
+                                            <t t-foreach="locations" t-as="loc">
+                                                <option t-att-value="loc.id"><t t-esc="loc.display_name"/></option>
+                                            </t>
+                                        </select>
+                                        <div class="form-text text-muted small">Where do you need these items delivered?</div>
+                                    </div>
+
+                                    <!-- Purpose -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Purpose / Reason</label>
+                                        <textarea name="purpose" class="form-control border-2" rows="3" required="1" placeholder="Why do you need this item?"></textarea>
+                                    </div>
+
+                                    <!-- Required Date -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Required By</label>
+                                        <input type="date" name="required_date" class="form-control border-2"/>
+                                    </div>
+
+                                    <!-- Buttons -->
+                                    <div class="d-flex justify-content-between mt-4">
+                                        <a href="/my/requisitions" class="btn btn-outline-secondary">Cancel</a>
+                                        <button type="submit" class="btn btn-primary px-5 fw-bold shadow">Submit Requisition</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- 4. Asset Damage Report Form                                   -->
+    <!-- ============================================================ -->
+    <template id="portal_asset_damage_report" name="Asset Damage Report">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_search" t-value="False"/>
+
+            <div class="container py-4">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <!-- Success Message -->
+                        <t t-if="success == 'submitted'">
+                            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" id="success_alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-check-circle fa-2x me-3 text-success"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-success">Report Submitted!</h6>
+                                        <p class="mb-0 small">Your damage report has been submitted and is pending review by your Line Manager.</p>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <script>
+                                setTimeout(function() {
+                                    var alert = document.getElementById('success_alert');
+                                    if (alert) {
+                                        alert.style.transition = 'opacity 0.5s ease';
+                                        alert.style.opacity = '0';
+                                        setTimeout(function() { alert.style.display = 'none'; }, 500);
+                                    }
+                                }, 5000);
+                            </script>
+                        </t>
+
+                        <!-- Error Message -->
+                        <t t-if="error">
+                            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" id="error_alert">
+                                <i class="fa fa-exclamation-circle me-2"/> <t t-esc="error"/>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <script>
+                                setTimeout(function() {
+                                    var alert = document.getElementById('error_alert');
+                                    if (alert) {
+                                        alert.style.transition = 'opacity 0.5s ease';
+                                        alert.style.opacity = '0';
+                                        setTimeout(function() { alert.style.display = 'none'; }, 500);
+                                    }
+                                }, 5000);
+                            </script>
+                        </t>
+
+                        <!-- Header -->
+                        <div class="card shadow-sm border-0 mb-4 text-white" style="background: linear-gradient(45deg, #dc3545, #b02a37);">
+                            <div class="card-body p-4">
+                                <h2 class="mb-1 fw-bold">Report Asset Damage</h2>
+                                <p class="mb-0 opacity-75">Report damaged assets for review and disposal</p>
+                            </div>
+                        </div>
+
+                        <!-- Info Card - Shows Status Flow -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-3 bg-light">
+                                <div class="row text-center">
+                                    <div class="col">
+                                        <span class="badge bg-secondary">1. Submit</span>
+                                        <i class="fa fa-arrow-right text-muted mx-2"></i>
+                                        <span class="badge bg-info">2. Line Manager</span>
+                                        <i class="fa fa-arrow-right text-muted mx-2"></i>
+                                        <span class="badge bg-success">3. Admin Approve</span>
+                                        <i class="fa fa-arrow-right text-muted mx-2"></i>
+                                        <span class="badge bg-dark">4. Scrapped</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <form action="/my/asset/damage-report/submit" method="post" id="damage_report_form">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Select Asset</label>
+                                        <select name="asset_id" class="form-select border-2" required="1">
+                                            <option value="">Select an asset...</option>
+                                            <t t-foreach="assigned_assets" t-as="asset">
+                                                <option t-att-value="asset.id">
+                                                    <t t-esc="asset.asset_tag"/> - <t t-esc="asset.name"/>
+                                                    (<t t-esc="asset.serial_number"/>)
+                                                    <t t-if="asset.assigned_to">
+                                                        - Assigned to: <t t-esc="asset.assigned_to.name"/>
+                                                    </t>
+                                                </option>
+                                            </t>
+                                        </select>
+                                        <t t-if="not assigned_assets">
+                                            <div class="text-warning small mt-1">
+                                                <i class="fa fa-exclamation-circle me-1"></i>
+                                                No assigned assets found.
+                                            </div>
+                                        </t>
+                                        <div class="form-text text-muted small">
+                                            Select the damaged asset. Only assigned assets are shown.
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Damage Severity</label>
+                                        <select name="damage_severity" class="form-select border-2" required="1">
+                                            <option value="minor">Minor</option>
+                                            <option value="moderate">Moderate</option>
+                                            <option value="severe">Severe</option>
+                                            <option value="critical">Critical</option>
+                                        </select>
+                                        <div class="form-text text-muted small">
+                                            <span class="text-success">Minor</span> - Cosmetic, doesn't affect functionality<br/>
+                                            <span class="text-warning">Moderate</span> - Some functionality affected<br/>
+                                            <span class="text-danger">Severe</span> - Major functionality loss<br/>
+                                            <span class="text-danger fw-bold">Critical</span> - Asset is unusable
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-primary">Damage Description</label>
+                                        <textarea name="damage_description" class="form-control border-2" rows="4" required="1" placeholder="Please describe the damage in detail..."></textarea>
+                                        <div class="form-text text-muted small">Provide as much detail as possible for the admin review.</div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between mt-4">
+                                        <a href="/my/requisitions" class="btn btn-outline-secondary">Cancel</a>
+                                        <button type="submit" class="btn btn-danger px-5 fw-bold shadow">
+                                            <i class="fa fa-exclamation-triangle me-2"/> Submit Damage Report
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_requisition_history" name="Requisition History">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_search" t-value="False"/>
+
+            <div class="container py-4">
+                <div class="card shadow-sm border-0 mb-4 text-white" style="background: linear-gradient(45deg, #1a237e, #283593);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-1 fw-bold">Requisition History</h2>
+                                <p class="mb-0 opacity-75">View all your past requisitions</p>
+                            </div>
+                            <a href="/my/requisitions" class="btn btn-light btn-lg rounded-pill shadow-sm">
+                                <i class="fa fa-arrow-left me-2"/> Back to Active
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my/requisitions">
+                            <i class="fa fa-list me-1"/> Active
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/my/requisitions/history">
+                            <i class="fa fa-history me-1"/> History
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-3">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <select class="form-select form-select-sm" id="history_filter_status">
+                                    <option value="">All Statuses</option>
+                                    <option value="audit_approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="cancelled">Cancelled</option>
+                                    <option value="scrapped">Scrapped</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control form-control-sm" id="history_filter_search" placeholder="Search by product or reference..."/>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="text-muted small">Showing <t t-esc="len(history_requisitions)"/> completed requisitions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <t t-if="history_requisitions">
+                            <div class="list-group list-group-flush">
+                                <t t-foreach="history_requisitions" t-as="req">
+                                    <a t-attf-href="/my/requisition/#{req.id}" class="list-group-item list-group-item-action px-4 py-3 border-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">
+                                                    <t t-esc="req.name"/>
+                                                    <span t-attf-class="badge ms-2 #{'bg-success' if req.state == 'audit_approved' else 'bg-danger' if req.state == 'rejected' else 'bg-secondary'}">
+                                                        <t t-esc="dict(req._fields['state'].selection).get(req.state, req.state)"/>
+                                                    </span>
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <t t-esc="req.product_id.name"/>
+                                                    <span class="mx-2">•</span>
+                                                    <t t-esc="req.quantity"/>
+                                                    <span class="mx-2">•</span>
+                                                    <t t-esc="req.destination_location.display_name"/>
+                                                </small>
+                                                <div class="small text-muted mt-1">
+                                                    <t t-if="req.audit_approval_date">
+                                                        <i class="fa fa-check-circle text-success me-1"></i>
+                                                        Completed: <span t-field="req.audit_approval_date" t-options='{"widget": "datetime"}'/>
+                                                    </t>
+                                                    <t t-elif="req.rejection_reason">
+                                                        <i class="fa fa-times-circle text-danger me-1"></i>
+                                                        Rejected: <span t-field="req.write_date" t-options='{"widget": "datetime"}'/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <i class="fa fa-clock-o text-muted me-1"></i>
+                                                        <span t-field="req.write_date" t-options='{"widget": "datetime"}'/>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <!-- Stock Move Link if exists -->
+                                                <t t-if="req.stock_move_id">
+                                                    <span class="badge bg-info text-white">
+                                                        <i class="fa fa-exchange me-1"/> Stock Move
+                                                    </span>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="p-5 text-center">
+                                <i class="fa fa-history fa-4x text-muted opacity-25 mb-3"></i>
+                                <h5 class="text-muted">No history found</h5>
+                                <p class="text-muted small">You don't have any completed requisitions yet.</p>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <t t-if="history_requisitions">
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 bg-success bg-opacity-10">
+                                <div class="card-body text-center py-2">
+                                    <h5 class="mb-0 text-success">
+                                        <t t-esc="len([r for r in history_requisitions if r.state == 'audit_approved'])"/>
+                                    </h5>
+                                    <small class="text-muted">Approved</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 bg-danger bg-opacity-10">
+                                <div class="card-body text-center py-2">
+                                    <h5 class="mb-0 text-danger">
+                                        <t t-esc="len([r for r in history_requisitions if r.state == 'rejected'])"/>
+                                    </h5>
+                                    <small class="text-muted">Rejected</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 bg-secondary bg-opacity-10">
+                                <div class="card-body text-center py-2">
+                                    <h5 class="mb-0 text-secondary">
+                                        <t t-esc="len([r for r in history_requisitions if r.state not in ['audit_approved', 'rejected']])"/>
+                                    </h5>
+                                    <small class="text-muted">Other</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 bg-primary bg-opacity-10">
+                                <div class="card-body text-center py-2">
+                                    <h5 class="mb-0 text-primary">
+                                        <t t-esc="sum(r.quantity for r in history_requisitions)"/>
+                                    </h5>
+                                    <small class="text-muted">Total Items</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_requisition_damage_reports" name="Damage Reports">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_search" t-value="False"/>
+
+            <div class="container py-4">
+                <!-- Header -->
+                <div class="card shadow-sm border-0 mb-4 text-white" style="background: linear-gradient(45deg, #dc3545, #b02a37);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-1 fw-bold">Damage Reports</h2>
+                                <p class="mb-0 opacity-75">View and manage your damage reports</p>
+                            </div>
+                            <a href="/my/asset/damage-report" class="btn btn-light btn-lg rounded-pill shadow-sm">
+                                <i class="fa fa-plus me-2"/> New Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my/requisitions">
+                            <i class="fa fa-list me-1"/> Active
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my/requisitions/history">
+                            <i class="fa fa-history me-1"/> History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/my/requisitions/damage-reports">
+                            <i class="fa fa-exclamation-triangle me-1"/> Damage Reports
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Damage Reports List -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <t t-if="damage_reports">
+                            <div class="list-group list-group-flush">
+                                <t t-foreach="damage_reports" t-as="report">
+                                    <div class="list-group-item px-4 py-3 border-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">
+                                                    <t t-esc="report.asset_name"/>
+                                                    <span t-attf-class="badge ms-2 #{'bg-secondary' if report.status == 'draft' else 'bg-warning' if report.status == 'submitted' else 'bg-info' if report.status == 'line_manager_approved' else 'bg-success' if report.status in ['admin_approved', 'scrapped'] else 'bg-danger'}">
+                                                        <t t-esc="dict(report._fields['status'].selection).get(report.status, report.status)"/>
+                                                    </span>
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <t t-esc="report.asset_tag"/>
+                                                    <span class="mx-2">•</span>
+                                                    <t t-esc="report.serial_number"/>
+                                                    <span class="mx-2">•</span>
+                                                    Severity: <span t-attf-class="badge #{'bg-success' if report.damage_severity == 'minor' else 'bg-warning' if report.damage_severity == 'moderate' else 'bg-danger'}">
+                                                        <t t-esc="report.damage_severity"/>
+                                                    </span>
+                                                </small>
+                                                <div class="small text-muted mt-1">
+                                                    <i class="fa fa-calendar me-1"/>
+                                                    Reported: <span t-field="report.reported_date" t-options='{"widget": "datetime"}'/>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <span t-attf-class="badge #{'bg-info' if report.source == 'portal' else 'bg-secondary'}">
+                                                    <t t-esc="report.source"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="p-5 text-center">
+                                <i class="fa fa-exclamation-triangle fa-4x text-muted opacity-25 mb-3"></i>
+                                <h5 class="text-muted">No damage reports found</h5>
+                                <p class="text-muted small">Click "New Report" to report a damaged asset.</p>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_error" name="Portal Error">
+        <t t-call="portal.portal_layout">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6 text-center">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-5">
+                                <div class="mb-4">
+                                    <i class="fa fa-exclamation-triangle fa-4x text-warning"></i>
+                                </div>
+                                <h3 class="fw-bold mb-3">Oops! Something Went Wrong</h3>
+                                <p class="text-muted mb-4">
+                                    <t t-if="error_message">
+                                        <t t-esc="error_message"/>
+                                    </t>
+                                    <t t-else="">
+                                        We're having trouble processing your request. Please try again.
+                                    </t>
+                                </p>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="/my/requisitions" class="btn btn-primary">
+                                        <i class="fa fa-arrow-left me-2"/> Back to Requisitions
+                                    </a>
+                                    <a href="/" class="btn btn-outline-secondary">
+                                        <i class="fa fa-home me-2"/> Home
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
